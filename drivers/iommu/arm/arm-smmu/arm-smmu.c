@@ -95,7 +95,7 @@ static void arm_smmu_rpm_use_autosuspend(struct arm_smmu_device *smmu)
 	 * to 5-10sec worth of reprogramming the context bank, while
 	 * the system appears to be locked up to the user.
 	 */
-	pm_runtime_set_autosuspend_delay(smmu->dev, 20);
+	pm_runtime_set_autosuspend_delay(smmu->dev, 5);
 	pm_runtime_use_autosuspend(smmu->dev);
 }
 
