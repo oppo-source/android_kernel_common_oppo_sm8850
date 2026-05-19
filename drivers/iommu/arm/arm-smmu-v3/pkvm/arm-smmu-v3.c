@@ -1379,8 +1379,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 	struct hyp_arm_smmu_v3_device *smmu = to_smmu(iommu);
 	struct hyp_arm_smmu_v3_domain *smmu_domain = domain->priv;
 	u32 pasid_bits = 0;
-	phys_addr_t cd_table_phys = 0;
-	__le64 *cd_table = NULL, *cd;
+	u64 *cd_table = NULL, *cd;
 	u32 domain_id, ste_cfg;
 
 	hyp_write_lock(&smmu_domain->list_lock);
@@ -1391,7 +1390,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 		goto out_unlock;
 	}
 
-	ste_cfg = FIELD_GET(STRTAB_STE_0_CFG, le64_to_cpu(dst->data[0]));
+	ste_cfg = FIELD_GET(STRTAB_STE_0_CFG, dst->data[0]);
 	/*
 	 * For stage-1:
 	 * - The kernel has to detach pasid = 0 the last.
@@ -1402,7 +1401,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 			ret = -EACCES;
 			goto out_unlock;
 		}
-		pasid_bits = FIELD_GET(STRTAB_STE_0_S1CDMAX, le64_to_cpu(dst->data[0]));
+		pasid_bits = FIELD_GET(STRTAB_STE_0_S1CDMAX, dst->data[0]);
 		if (pasid >= (1 << pasid_bits)) {
 			ret = -E2BIG;
 			goto out_unlock;
@@ -1427,7 +1426,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 				}
 			}
 			cd = smmu_get_cd_ptr(cd_table, 0);
-			domain_id = FIELD_GET(CTXDESC_CD_0_ASID, le64_to_cpu(cd[0]));
+			domain_id = FIELD_GET(CTXDESC_CD_0_ASID, cd[0]);
 			if (domain->domain_id != domain_id) {
 				ret = -EACCES;
 				goto out_unlock;
@@ -1439,7 +1438,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 				ret = -ENOENT;
 				goto out_unlock;
 			}
-			domain_id = FIELD_GET(CTXDESC_CD_0_ASID, le64_to_cpu(cd[0]));
+			domain_id = FIELD_GET(CTXDESC_CD_0_ASID, cd[0]);
 			if (domain->domain_id != domain_id) {
 				ret = -EACCES;
 				goto out_unlock;
@@ -1454,7 +1453,7 @@ static int smmu_detach_dev(struct kvm_hyp_iommu *iommu, struct kvm_hyp_iommu_dom
 			goto out_unlock;
 		}
 	} else {
-		domain_id = FIELD_GET(STRTAB_STE_2_S2VMID, le64_to_cpu(dst->data[2]));
+		domain_id = FIELD_GET(STRTAB_STE_2_S2VMID, dst->data[2]);
 		if ((ste_cfg != STRTAB_STE_0_CFG_S2_TRANS) ||
 		    (domain->domain_id != domain_id)) {
 			ret = -EACCES;

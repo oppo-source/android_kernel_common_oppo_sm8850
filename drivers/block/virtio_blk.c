@@ -1611,7 +1611,6 @@ static int virtblk_freeze(struct virtio_device *vdev)
 	 * pointers safely.
 	 */
 	vblk->vqs = NULL;
-
 	return 0;
 }
 
